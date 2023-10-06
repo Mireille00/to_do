@@ -26,18 +26,28 @@ class MyTheme {
         ),
       ),
     ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      selectedItemColor: primaryLight,
+      unselectedItemColor: greyColor,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+    ),
     textTheme: TextTheme(
       titleLarge: TextStyle(
         fontSize: 22,
         fontWeight: FontWeight.bold,
         color: whiteColor,
       ),
-    ),
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      selectedItemColor: primaryLight,
-      unselectedItemColor: greyColor,
-      backgroundColor: Colors.transparent,
-      elevation: 0,
+      titleMedium: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: blackColor,
+      ),
+      titleSmall: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: blackColor,
+      ),
     ),
   );
 }
