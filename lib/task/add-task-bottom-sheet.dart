@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:to_do/dialog-utils.dart';
+import 'package:to_do/firebase-utils.dart';
+import 'package:to_do/model/task.dart';
+import 'package:to_do/providers/auth-provider.dart';
+import 'package:to_do/providers/list-provider.dart';
 
 class AddTaskBottomSheet extends StatefulWidget {
   @override
@@ -8,9 +14,13 @@ class AddTaskBottomSheet extends StatefulWidget {
 class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
   DateTime selectedDate = DateTime.now();
   var formkey = GlobalKey<FormState>();
+  String title = '';
+  String description = '';
+  late ListProvider listProvider;
 
   @override
   Widget build(BuildContext context) {
+    listProvider = Provider.of<ListProvider>(context);
     return Container(
       padding: EdgeInsets.all(12),
       child: Column(
@@ -30,6 +40,9 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextFormField(
+                      onChanged: (task) {
+                        title = task;
+                      },
                       validator: (text) {
                         if (text == null || text.isEmpty) {
                           return 'please enter task title';
@@ -44,6 +57,9 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextFormField(
+                      onChanged: (task) {
+                        description = task;
+                      },
                       validator: (text) {
                         if (text == null || text.isEmpty) {
                           return 'please enter description';
@@ -94,7 +110,7 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
   void showCalender() async {
     var chosendate = await showDatePicker(
         context: context,
-        initialDate: DateTime.now(),
+        initialDate: selectedDate,
         firstDate: DateTime.now(),
         lastDate: DateTime.now().add(Duration(days: 365)));
     if (chosendate != null) {
@@ -104,6 +120,23 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
   }
 
   void addTask() {
-    if (formkey.currentState?.validate() == true) {}
+    if (formkey.currentState?.validate() == true) {
+      Task task =
+          Task(title: title, description: description, dateTime: selectedDate);
+      DialogUtils.showLoading(context, 'loding...');
+      var authProvider = Provider.of<AuthProvider>(context, listen: false);
+      FirebaseUtils.addTaskToFireStore(task, authProvider.currentUser!.id!)
+          .then((value) {
+        DialogUtils.hideLoading(context);
+        DialogUtils.showMessage(context, 'Task added successfully',
+            posActionName: 'OK', posAction: () {
+          Navigator.pop(context);
+        });
+      }).timeout(Duration(milliseconds: 500), onTimeout: () {
+        print('todo added successfully');
+        listProvider.getAllTasksFromFireStore(authProvider.currentUser!.id!);
+        Navigator.pop(context);
+      });
+    }
   }
 }
